@@ -233,14 +233,9 @@
             <tr>
               <th class="sno-cell">#</th>
               <th>Sample Entry Date</th>
-              <th>Collection Date</th>
               <th>Test name</th>
               <th>Patient name</th>
-              <th>Child name</th>
-              <th>Sample type</th>
-              <th>Consent</th>
               <th>Location</th>
-              <th>Invoice No</th>
               <th>Tracking No</th>
             </tr>
           </thead>
@@ -636,14 +631,9 @@ function updateTableDisplay(data, searchTerm = "") {
     tr.innerHTML = `
       <td class="sno-cell">${reversed.length - idx}</td>
       <td>${highlight(row["Sample Entry Date"])}</td>
-      <td>${highlight(row["Collection Date"])}</td>
       <td>${highlight(row["Test name"])}</td>
       <td>${row["Patient name"] ? `<span class="tracking-link" onclick="openModal('${row["Patient name"].replace(/'/g, "\\'")}')">${highlight(row["Patient name"])}</span>` : ''}</td>
-      <td>${highlight(row["Patient child name"])}</td>
-      <td>${highlight(row["sample type"])}</td>
-      <td>${highlight(row["Consent Received / Not"])}</td>
       <td>${highlight(row["Location"])}</td>
-      <td>${highlight(row["Invoice NO"])}</td>
       <td>${highlight(row["Tracking no"])}</td>
     `;
     tableBody.appendChild(tr);
