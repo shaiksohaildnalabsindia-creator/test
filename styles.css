@@ -110,7 +110,6 @@ body {
 .page-info { flex: 1; }
 .page-title { font-size: 18px; font-weight: 600; color: #111827; display: flex; align-items: center; gap: 8px; }
 .page-subtitle { font-size: 13px; color: #6b7280; }
-.user-avatar { width: 35px; height: 35px; border-radius: 50%; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
 /* ---------- FORMS & CONTAINERS ---------- */
 .form-wrapper { padding: 30px; display: flex; align-items: center; justify-content: center; flex: 1; }
