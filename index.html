@@ -8,8 +8,12 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<div id="sidebar-container"></div>
+
 <div class="main-content" id="mainContent">
   <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
     <div class="page-info">
       <div class="page-title">
         <div class="logo-icon" style="font-size: 24px;">📦</div>
@@ -17,6 +21,7 @@
       </div>
     </div>
   </header>
+
   <div class="dashboard-container">
     <div class="grid">
       <div class="box" onclick="window.location.href='parcel_entry.html'" tabindex="0">
@@ -53,5 +58,6 @@
 </div>
 
 <script src="config.js"></script>
+
 </body>
 </html>
