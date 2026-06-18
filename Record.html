@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Records - Optimized Image Loading</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+  
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    /* ---------- PAGE SPECIFIC STYLES ---------- */
+    .content-wrapper { flex: 1; padding: 30px; background: #f8fafc; overflow-y: auto; }
+    .content-container { width: 100%; max-width: 1400px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .header-content { flex: 1; }
+    .header h2 { font-size: 24px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .header p { opacity: 0.9; font-size: 14px; margin: 0; }
+
+    .stats-card { background: rgba(255, 255, 255, 0.2); padding: 15px 20px; border-radius: 10px; text-align: center; min-width: 150px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .stats-count { font-size: 28px; font-weight: 700; margin-bottom: 5px; display: block; }
+    .stats-label { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .filter-info { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 16px 20px; border-radius: 12px; margin: 20px 30px; border-left: 4px solid #8b5cf6; font-size: 14px; color: #4c1d95; line-height: 1.5; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1); }
+    .filter-info strong { color: #7c3aed; font-weight: 600; }
+
+    /* ---------- SEARCH BAR ---------- */
+    .search-container { padding: 25px 30px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+    .search-box-wrapper { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+    .search-box-container { flex: 1; min-width: 300px; }
+    .search-label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+    .search-label::before { content: '🔍'; font-size: 14px; opacity: 0.7; }
+    
+    .search-input { width: 100%; padding: 14px 16px; padding-left: 45px; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 15px; transition: all 0.3s ease; background: #ffffff; font-family: inherit; box-shadow: 0 1px 2px rgba(0,0,0,0.05); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 16px center; background-size: 16px; }
+    .search-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    
+    .search-buttons { display: flex; gap: 10px; }
+    .search-btn, .clear-btn, .debug-btn, .inspect-btn { padding: 14px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; height: fit-content; }
+    .search-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .search-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
+    .clear-btn { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+    .clear-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3); }
+    .debug-btn { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .inspect-btn { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+    
+    .search-stats { margin-top: 15px; font-size: 13px; color: #6b7280; display: flex; gap: 20px; flex-wrap: wrap; padding: 12px 15px; background: #f3f4f6; border-radius: 8px; }
+    .search-stats span { display: inline-flex; align-items: center; gap: 5px; }
+
+    /* ---------- TABLE STYLES ---------- */
+    .table-container { padding: 25px 30px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; }
+    th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+    td { color: #4b5563; font-size: 14px; }
+    tr:hover td { background: #f9fafb; }
+    tr:last-child td { border-bottom: none; }
+    .sno-cell { width: 60px; color: #6b7280; font-weight: 500; text-align: center; }
+
+    .tracking-link { color: #3b82f6; text-decoration: none; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid transparent; font-size: 13px; }
+    .tracking-link:hover { background: #dbeafe; border-color: #3b82f6; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); }
+
+    /* ---------- SKELETON LOADER ---------- */
+    .skeleton-loader { padding: 20px; }
+    .skeleton-row { display: flex; margin-bottom: 12px; gap: 10px; }
+    .skeleton-cell { height: 24px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 4px; flex: 1; }
+    .skeleton-cell:first-child { max-width: 50px; }
+    @keyframes loading { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
+
+    /* ---------- REFRESH BUTTON ---------- */
+    .refresh-btn { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; margin-left: auto; }
+    .refresh-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
+    .refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .refresh-btn .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .last-updated { margin-top: 10px; font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #10b981; color: white; font-size: 11px; padding: 2px 8px; border-radius: 12px; margin-left: 10px; display: inline-block; }
+
+    /* ---------- DEBUG PANEL ---------- */
+    .debug-panel { background: #1e293b; color: #e2e8f0; padding: 20px 30px; margin: 20px 30px; border-radius: 12px; font-family: monospace; font-size: 13px; border-left: 4px solid #f59e0b; transition: all 0.3s ease; }
+    .debug-panel.hidden { display: none; }
+    .debug-panel pre { white-space: pre-wrap; word-wrap: break-word; margin-top: 10px; background: #0f172a; padding: 15px; border-radius: 8px; max-height: 200px; overflow: auto; color: #4ade80; }
+    .button-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .button-group button { padding: 8px 16px; font-size: 12px; }
+
+    /* ---------- IMAGE MODAL & GALLERY ---------- */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; padding: 20px; }
+    .modal.show { display: flex; animation: fadeIn 0.3s ease; }
+    .modal-content { position: relative; max-width: 95vw; max-height: 95vh; overflow: auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+    
+    .gallery { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; width: 100%; }
+    .gallery img { max-width: 80vw; max-height: 80vh; object-fit: contain; border-radius: 8px; cursor: zoom-in; display: block; transition: transform 0.2s, opacity 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .gallery img:hover { transform: scale(1.01); }
+
+    .img-container { position: relative; display: inline-block; min-width: 200px; min-height: 150px; border-radius: 8px; overflow: hidden; }
+    .loading-placeholder { position: absolute; width: 100%; height: 100%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+    .modal-loading { color: white; font-size: 18px; padding: 30px; text-align: center; }
+    .error-message { color: #f87171; background: rgba(254, 226, 226, 0.1); padding: 20px; border-radius: 8px; text-align: center; margin: 20px; border: 1px solid rgba(254, 226, 226, 0.2); }
+
+    /* ---------- FULLSCREEN ---------- */
+    .fullscreen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; touch-action: none; }
+    .fullscreen.show { display: flex; animation: fadeIn 0.3s ease; }
+    .fullscreen img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: grab; transition: transform 0.1s ease-out; transform-origin: center center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    
+    .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2001; transition: all 0.2s; backdrop-filter: blur(10px); }
+    .nav-arrow:hover { background: rgba(255,255,255,0.25); transform: translateY(-50%) scale(1.1); }
+    .nav-arrow.prev { left: 20px; } .nav-arrow.next { right: 20px; }
+    
+    .close-btn { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.15); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer; z-index: 2001; transition: all 0.2s; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+    .close-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.1); }
+    
+    .info-panel { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; z-index: 2001; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 10px; }
+
+    mark { background-color: #fef3c7; color: #92400e; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+    /* ---------- EMPTY STATE ---------- */
+    .no-results { padding: 60px 20px; text-align: center; color: #9ca3af; }
+    .no-results-icon { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ---------- MOBILE STYLES ---------- */
+    @media (max-width: 768px) {
+      .content-wrapper { padding: 15px; }
+      .header { padding: 20px; flex-direction: column; align-items: stretch; }
+      .stats-card { align-self: flex-start; }
+      .filter-info { margin: 15px; padding: 15px; }
+      .search-container { padding: 20px; }
+      .search-box-wrapper { flex-direction: column; gap: 15px; }
+      .search-box-container { min-width: 100%; }
+      .search-buttons { width: 100%; }
+      .search-btn, .clear-btn, .debug-btn, .inspect-btn { flex: 1; justify-content: center; }
+      .table-container { padding: 15px; }
+      th, td { padding: 12px 15px; font-size: 13px; }
+      .nav-arrow { width: 50px; height: 50px; font-size: 24px; }
+      .close-btn { width: 40px; height: 40px; font-size: 20px; }
+      .button-group { flex-direction: column; }
+      .gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-card { min-width: 120px; padding: 12px 15px; }
+      .stats-count { font-size: 24px; }
+      .search-stats { flex-direction: column; gap: 8px; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="sidebar-container"></div>
+
+<div class="main-content" id="mainContent">
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+    <div class="page-info">
+      <div class="page-title">
+        <span>📋</span>
+        <span>Patients Record <span class="badge">Fast Image Loading</span></span>
+      </div>
+      <div class="page-subtitle">Images load in 2-3 seconds with caching</div>
+    </div>
+    <div class="user-menu">
+      <div class="user-avatar">U</div>
+    </div>
+  </header>
+
+  <div class="content-wrapper">
+    <div class="content-container">
+      <div class="header">
+        <div class="header-content">
+          <h2>📋 Patients Record</h2>
+          <p>Optimized image loading with caching and lazy loading</p>
+          <div class="last-updated" id="lastUpdated">
+            <span>⏱️ Status: <span id="apiStatus">Loading data...</span></span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <div class="stats-card">
+            <span class="stats-count" id="totalCount">0</span>
+            <span class="stats-label">Records</span>
+          </div>
+          <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+            <span id="refreshIcon">🔄</span>
+            <span id="refreshText">Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="debug-panel" id="debugPanel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong>🔧 Image Cache Stats</strong>
+          <div>
+            <span style="color: #f59e0b;" id="cacheStats">0 images cached</span>
+            <button class="clear-btn" onclick="toggleDebugPanel()" style="margin-left: 10px; padding: 4px 8px; font-size: 11px;">
+              <span>👁️</span> Hide
+            </button>
+          </div>
+        </div>
+        <div class="button-group">
+          <button class="debug-btn" onclick="testImageLoading()"><span>🖼️</span> Test Image Speed</button>
+          <button class="clear-btn" onclick="clearImageCache()"><span>🗑️</span> Clear Cache</button>
+          <button class="inspect-btn" onclick="prefetchAllImages()"><span>📥</span> Prefetch All</button>
+        </div>
+        <pre id="debugLog">Image loading optimized - click a patient name to test</pre>
+      </div>
+
+      <div class="filter-info" id="filterInfo">
+        Loading data from API...
+      </div>
+
+      <div class="search-container">
+        <div class="search-box-wrapper">
+          <div class="search-box-container">
+            <label class="search-label">Search Patient Records</label>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by patient name, test name, location..." onkeyup="debounceSearch()">
+          </div>
+          <div class="search-buttons">
+            <button class="search-btn" onclick="performSearch()"><span>🔍</span> Search</button>
+            <button class="clear-btn" onclick="clearSearch()"><span>🗑️</span> Clear</button>
+          </div>
+        </div>
+        <div class="search-stats" id="searchStats"></div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="sno-cell">#</th>
+              <th>Sample Entry Date</th>
+              <th>Collection Date</th>
+              <th>Test name</th>
+              <th>Patient name</th>
+              <th>Child name</th>
+              <th>Sample type</th>
+              <th>Consent</th>
+              <th>Location</th>
+              <th>Invoice No</th>
+              <th>Tracking No</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="11">
+                <div class="skeleton-loader">
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="imageModal" class="modal">
+  <button class="close-btn" onclick="closeModal()">×</button>
+  <div class="modal-content">
+    <div class="gallery" id="gallery"></div>
+  </div>
+</div>
+
+<div id="fullscreen" class="fullscreen">
+  <button class="close-btn" onclick="closeFullscreen()">×</button>
+  <button class="nav-arrow prev" onclick="prevImage()">‹</button>
+  <button class="nav-arrow next" onclick="nextImage()">›</button>
+  <div class="info-panel" id="infoPanel">
+    <span id="imageCounter">1/1</span> • <span id="imageCaption">Image</span>
+  </div>
+  <img id="fsImage" src="" alt="Fullscreen view">
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+
+<script>
+/* ===== DOM ELEMENTS ===== */
+const tableBody = document.getElementById("tableBody");
+const imageModal = document.getElementById("imageModal");
+const gallery = document.getElementById("gallery");
+const fullscreen = document.getElementById("fullscreen");
+const fsImage = document.getElementById("fsImage");
+const imageCounter = document.getElementById("imageCounter");
+const imageCaption = document.getElementById("imageCaption");
+const searchInput = document.getElementById("searchInput");
+const searchStats = document.getElementById("searchStats");
+const totalCount = document.getElementById("totalCount");
+const apiStatus = document.getElementById("apiStatus");
+const filterInfo = document.getElementById("filterInfo");
+const debugLog = document.getElementById("debugLog");
+const cacheStats = document.getElementById("cacheStats");
+const refreshBtn = document.getElementById("refreshBtn");
+const refreshIcon = document.getElementById("refreshIcon");
+const refreshText = document.getElementById("refreshText");
+
+/* ===== ZOOM AND PAN VARIABLES ===== */
+let scale = 1, translateX = 0, translateY = 0, isDragging = false, startX = 0, startY = 0;
+
+/* ===== GLOBAL VARIABLES ===== */
+let allData = [], filteredData = [], currentDisplayData = [];
+let isSearching = false, currentSearchTerm = "", currentImages = [], currentIndex = 0;
+let searchTimeout = null, isLoading = false;
+
+/* ===== IMAGE CACHE ===== */
+const imageCache = new Map();
+let imageMetadata = null, imageLoadStartTime = 0;
+
+/* ===== SAMPLE DATA (FALLBACK) ===== */
+const SAMPLE_DATA = [
+  { "Sample Entry Date": "2024-01-15", "Collection Date": "2024-01-16", "Test name": "Complete Blood Count", "Patient name": "John Smith", "Patient child name": "", "sample type": "Blood", "Consent Received / Not": "Yes", "Location": "New York", "Invoice NO": "INV-001", "Tracking no": "TRK001" },
+  { "Sample Entry Date": "2024-01-15", "Collection Date": "2024-01-16", "Test name": "Lipid Profile", "Patient name": "Sarah Johnson", "Patient child name": "", "sample type": "Blood", "Consent Received / Not": "Yes", "Location": "Los Angeles", "Invoice NO": "INV-002", "Tracking no": "TRK002" }
+];
+const SAMPLE_IMAGES = [
+  { url: "https://via.placeholder.com/300x200?text=Sample+1", caption: "Sample Image 1" },
+  { url: "https://via.placeholder.com/300x200?text=Sample+2", caption: "Sample Image 2" }
+];
+
+/* ===== UI TOGGLES ===== */
+function toggleDebugPanel() {
+  const panel = document.getElementById('debugPanel');
+  const btn = event.target.closest('button');
+  
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.innerHTML = '<span>👁️</span> Hide';
+    localStorage.setItem('debugPanelHidden', 'false');
+  } else {
+    panel.style.display = 'none';
+    btn.innerHTML = '<span>👁️</span> Show';
+    localStorage.setItem('debugPanelHidden', 'true');
+  }
+}
+
+window.addEventListener('load', () => {
+  if (localStorage.getItem('debugPanelHidden') === 'true') {
+    document.getElementById('debugPanel').style.display = 'none';
+    const btn = document.querySelector('.debug-panel').previousElementSibling?.querySelector('.clear-btn') || document.querySelector('.debug-panel .clear-btn');
+    if (btn) btn.innerHTML = '<span>👁️</span> Show';
+  }
+});
+
+/* ===== DEBUG LOGGING ===== */
+function log(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  const colors = { info: '#f59e0b', success: '#4ade80', error: '#f87171', data: '#60a5fa' };
+  debugLog.innerHTML = `[${timestamp}] <span style="color: ${colors[type] || colors.info}">${message}</span>\n` + debugLog.innerHTML;
+  const lines = debugLog.innerHTML.split('\n');
+  if (lines.length > 15) debugLog.innerHTML = lines.slice(0, 15).join('\n');
+}
+
+function clearDebug() { debugLog.innerHTML = 'Log cleared.\n'; }
+
+/* ===== OPTIMIZED IMAGE LOADING ===== */
+function preloadImage(url, caption) {
+  return new Promise((resolve, reject) => {
+    if (imageCache.has(url)) {
+      log(`🖼️ Cache hit: ${caption || url.substring(0, 30)}`, 'success');
+      resolve(imageCache.get(url));
+      return;
+    }
+    log(`📥 Loading: ${caption || url.substring(0, 30)}`, 'info');
+    
+    const img = new Image();
+    const startTime = performance.now();
+    
+    img.onload = () => {
+      imageCache.set(url, img);
+      log(`✅ Loaded in ${((performance.now() - startTime) / 1000).toFixed(2)}s: ${caption || url.substring(0, 30)}`, 'success');
+      updateCacheStats();
+      resolve(img);
+    };
+    img.onerror = () => {
+      log(`❌ Failed: ${caption || url.substring(0, 30)}`, 'error');
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
+}
+
+function updateCacheStats() {
+  cacheStats.textContent = `${imageCache.size} images cached`;
+  localStorage.setItem('imageCacheSize', imageCache.size);
+}
+
+function clearImageCache() { imageCache.clear(); updateCacheStats(); log('🗑️ Image cache cleared', 'info'); }
+
+async function testImageLoading() {
+  log('Testing image loading speed...', 'info');
+  imageLoadStartTime = performance.now();
+  try {
+    await preloadImage('https://via.placeholder.com/100x100?text=Test', 'Test Image');
+    log(`⚡ Test complete in ${((performance.now() - imageLoadStartTime) / 1000).toFixed(2)}s`, 'success');
+  } catch (error) { log(`❌ Test failed: ${error.message}`, 'error'); }
+}
+
+async function fetchImageMetadata() {
+  if (imageMetadata) { log('Using cached image metadata', 'info'); return imageMetadata; }
+  log('Fetching image metadata...', 'info');
+  try {
+    const response = await fetch(CONFIG.IMAGE_API + `?t=${Date.now()}`);
+    const data = await response.json();
+    imageMetadata = Array.isArray(data) ? data : (data.data || data.images || []);
+    log(`✅ Loaded metadata for ${imageMetadata.length} images`, 'success');
+    return imageMetadata;
+  } catch (error) {
+    log(`❌ Failed to load image metadata: ${error.message}`, 'error');
+    return SAMPLE_IMAGES;
+  }
+}
+
+function getImagesForPatient(patientName, allImages) {
+  if (!patientName || !allImages) return [];
+  const searchName = patientName.toLowerCase();
+  return allImages.filter(img => img.caption && img.caption.toLowerCase().includes(searchName));
+}
+
+async function openModal(patientName) {
+  log(`Opening images for: ${patientName}`, 'info');
+  imageModal.classList.add("show");
+  gallery.innerHTML = '<div class="modal-loading">Loading images...</div>';
+  const startTime = performance.now();
+  
+  try {
+    const allImages = await fetchImageMetadata();
+    const matchingImages = getImagesForPatient(patientName, allImages);
+    
+    if (matchingImages.length === 0) {
+      gallery.innerHTML = `<div class="error-message">No images found for ${patientName}</div>`;
+      return;
+    }
+    
+    currentImages = matchingImages;
+    gallery.innerHTML = '';
+    
+    matchingImages.forEach((img, index) => {
+      const container = document.createElement('div');
+      container.className = 'img-container';
+      container.setAttribute('data-index', index);
+      
+      const placeholder = document.createElement('div');
+      placeholder.className = 'loading-placeholder';
+      container.appendChild(placeholder);
+      
+      const imageElement = document.createElement('img');
+      imageElement.style.display = 'none';
+      imageElement.alt = img.caption || `Image ${index + 1}`;
+      imageElement.onclick = () => openFullscreen(index);
+      
+      container.appendChild(imageElement);
+      gallery.appendChild(container);
+      
+      preloadImage(img.url, img.caption).then(loadedImg => {
+        imageElement.src = loadedImg.src;
+        imageElement.style.display = 'block';
+        placeholder.style.display = 'none';
+      }).catch(() => {
+        placeholder.style.display = 'none';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.style.padding = '10px';
+        errorDiv.textContent = 'Failed to load';
+        container.appendChild(errorDiv);
+      });
+    });
+    
+    log(`✅ Gallery ready in ${((performance.now() - startTime) / 1000).toFixed(2)}s (${matchingImages.length} images)`, 'success');
+  } catch (error) {
+    log(`❌ Gallery error: ${error.message}`, 'error');
+    gallery.innerHTML = `<div class="error-message">Error loading images: ${error.message}</div>`;
+  }
+}
+
+async function prefetchAllImages() {
+  log('🔄 Prefetching all images...', 'info');
+  const startTime = performance.now();
+  try {
+    const allImages = await fetchImageMetadata();
+    let loaded = 0;
+    const imagesToLoad = allImages.slice(0, 10);
+    for (const img of imagesToLoad) { await preloadImage(img.url, img.caption); loaded++; }
+    log(`✅ Prefetched ${loaded} images in ${((performance.now() - startTime) / 1000).toFixed(2)}s`, 'success');
+  } catch (error) { log(`❌ Prefetch failed: ${error.message}`, 'error'); }
+}
+
+function closeModal() { imageModal.classList.remove("show"); }
+
+function openFullscreen(index) {
+  if (!currentImages[index]) return;
+  currentIndex = index;
+  fsImage.src = currentImages[index].url;
+  fsImage.alt = currentImages[index].caption || `Image ${index + 1}`;
+  imageCounter.textContent = `${index + 1}/${currentImages.length}`;
+  imageCaption.textContent = currentImages[index].caption || `Image ${index + 1}`;
+  scale = 1; translateX = 0; translateY = 0; updateTransform();
+  fullscreen.classList.add("show");
+  fsImage.style.cursor = "grab";
+}
+
+function closeFullscreen() { fullscreen.classList.remove("show"); }
+function prevImage() { if (currentImages.length) { currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length; openFullscreen(currentIndex); } }
+function nextImage() { if (currentImages.length) { currentIndex = (currentIndex + 1) % currentImages.length; openFullscreen(currentIndex); } }
+
+fsImage.addEventListener("wheel", e => { e.preventDefault(); scale = Math.min(Math.max(1, scale - e.deltaY * 0.001), 5); updateTransform(); });
+fsImage.addEventListener("mousedown", e => { if (scale <= 1) return; isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; fsImage.style.cursor = "grabbing"; e.preventDefault(); });
+document.addEventListener("mousemove", e => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform(); });
+document.addEventListener("mouseup", () => { isDragging = false; fsImage.style.cursor = "grab"; });
+fsImage.addEventListener("dblclick", () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); });
+function updateTransform() { fsImage.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`; }
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if (fullscreen.classList.contains("show")) closeFullscreen(); else if (imageModal.classList.contains("show")) closeModal(); } 
+  else if (fullscreen.classList.contains("show")) { if (e.key === "ArrowLeft") prevImage(); else if (e.key === "ArrowRight") nextImage(); }
+});
+
+imageModal.addEventListener('click', (e) => { if (e.target === imageModal) closeModal(); });
+fullscreen.addEventListener('click', (e) => { if (e.target === fullscreen) closeFullscreen(); });
+
+/* ===== DATA LOADING ===== */
+async function tryLoadFromApi() {
+  isLoading = true;
+  refreshBtn.disabled = true;
+  refreshIcon.style.animation = 'spin 1s linear infinite';
+  refreshText.textContent = 'Loading...';
+  
+  log('Loading patient data...', 'info');
+  apiStatus.textContent = 'Loading...';
+  
+  try {
+    const response = await fetch(CONFIG.RECORDS_API_URL + `?t=${Date.now()}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    log('✅ Patient data received', 'success');
+    
+    if (Array.isArray(data)) allData = data;
+    else if (data.data && Array.isArray(data.data)) allData = data.data;
+    else if (data.records && Array.isArray(data.records)) allData = data.records;
+    else allData = SAMPLE_DATA;
+    
+    filteredData = allData.filter(row => hasMinTwoColumnsFilled(row));
+    totalCount.textContent = filteredData.length;
+    filterInfo.innerHTML = `<strong>✅ Data Loaded:</strong> ${filteredData.length} records displayed`;
+    
+    updateTableDisplay(filteredData);
+    apiStatus.textContent = `✅ ${filteredData.length} records`;
+    
+    setTimeout(() => { fetchImageMetadata().then(() => log('📸 Image metadata cached', 'success')); }, 1000);
+    
+  } catch (error) {
+    log(`❌ Data load failed: ${error.message}`, 'error');
+    allData = SAMPLE_DATA;
+    filteredData = allData.filter(row => hasMinTwoColumnsFilled(row));
+    totalCount.textContent = filteredData.length;
+    filterInfo.innerHTML = `<strong>⚠️ Using Sample Data</strong>`;
+    updateTableDisplay(filteredData);
+    apiStatus.textContent = '⚠️ Sample data';
+  }
+  
+  isLoading = false;
+  refreshBtn.disabled = false;
+  refreshIcon.style.animation = '';
+  refreshText.textContent = 'Refresh';
+}
+
+function refreshData() { tryLoadFromApi(); }
+
+/* ===== HELPER FUNCTIONS ===== */
+function hasMinTwoColumnsFilled(row) {
+  const firstFour = [row["Sample Entry Date"], row["Collection Date"], row["Test name"], row["Patient name"]];
+  return firstFour.filter(col => col && col.toString().trim() !== "").length >= 2;
+}
+
+function matchesSearch(row, term) {
+  if (!term) return true;
+  const lowerTerm = term.toLowerCase().trim();
+  const columns = ["Sample Entry Date", "Collection Date", "Test name", "Patient name", "Patient child name", "sample type", "Consent Received / Not", "Location", "Invoice NO", "Tracking no"];
+  return columns.some(col => row[col] && row[col].toString().toLowerCase().includes(lowerTerm));
+}
+
+/* ===== SEARCH ===== */
+function performSearch() {
+  const term = searchInput.value.trim();
+  currentSearchTerm = term;
+  isSearching = term !== "";
+  
+  if (!term) { clearSearch(); return; }
+  
+  const results = filteredData.filter(row => matchesSearch(row, term));
+  updateTableDisplay(results, term);
+  searchStats.innerHTML = `<span>Found: <strong>${results.length}</strong> records</span><span>Total: <strong>${filteredData.length}</strong></span>`;
+}
+
+function clearSearch() {
+  searchInput.value = "";
+  currentSearchTerm = "";
+  isSearching = false;
+  updateTableDisplay(filteredData);
+  searchStats.innerHTML = "";
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(performSearch, 300);
+}
+
+/* ===== TABLE DISPLAY ===== */
+function updateTableDisplay(data, searchTerm = "") {
+  tableBody.innerHTML = '';
+  if (data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="11" class="no-results"><div class="no-results-icon">🔍</div>No records found</td></tr>`;
+    return;
+  }
+  
+  const reversed = [...data].reverse();
+  reversed.forEach((row, idx) => {
+    const tr = document.createElement("tr");
+    const highlight = (text) => {
+      if (!searchTerm || !text) return text || '';
+      const str = text.toString(), lower = str.toLowerCase(), termLower = searchTerm.toLowerCase();
+      if (lower.includes(termLower)) {
+        const start = lower.indexOf(termLower), end = start + searchTerm.length;
+        return str.substring(0, start) + `<mark>${str.substring(start, end)}</mark>` + str.substring(end);
+      }
+      return str;
+    };
+    
+    tr.innerHTML = `
+      <td class="sno-cell">${reversed.length - idx}</td>
+      <td>${highlight(row["Sample Entry Date"])}</td>
+      <td>${highlight(row["Collection Date"])}</td>
+      <td>${highlight(row["Test name"])}</td>
+      <td>${row["Patient name"] ? `<span class="tracking-link" onclick="openModal('${row["Patient name"].replace(/'/g, "\\'")}')">${highlight(row["Patient name"])}</span>` : ''}</td>
+      <td>${highlight(row["Patient child name"])}</td>
+      <td>${highlight(row["sample type"])}</td>
+      <td>${highlight(row["Consent Received / Not"])}</td>
+      <td>${highlight(row["Location"])}</td>
+      <td>${highlight(row["Invoice NO"])}</td>
+      <td>${highlight(row["Tracking no"])}</td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ===== INITIALIZATION ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  tryLoadFromApi();
+  searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+});
+</script>
+
+</body>
+</html>
