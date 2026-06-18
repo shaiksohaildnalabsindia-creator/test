@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barcode Scanner with Manual Entry</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="stylesheet" href="styles.css">
+
+<style>
+  /* ---------- SCANNER SPECIFIC STYLES ---------- */
+  .scanner-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    min-height: calc(100vh - 70px);
+  }
+
+  .scanner-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .scanner-container h2 { 
+    color: #6366F1;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+
+  .scanner-info { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+  .info-panel { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white; padding: 15px 20px; border-radius: 12px; font-size: 16px; font-weight: 600; }
+  .format-badge { display: inline-flex; align-items: center; gap: 6px; background: #FEF3C7; color: #92400E; padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-left: 10px; }
+
+  /* Video Container */
+  .video-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto 25px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); background: #000; aspect-ratio: 4/3; }
+  video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .scanner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+  .scanner-frame { width: 80%; height: 200px; border: 3px solid #10B981; border-radius: 8px; animation: pulse 2s infinite; position: relative; }
+  .scanner-frame::before { content: '⇨ Position barcode/QR code here'; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); color: white; background: rgba(0, 0, 0, 0.7); padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
+
+  @keyframes pulse { 0%, 100% { border-color: #10B981; } 50% { border-color: #34D399; } }
+
+  /* Panels & Results */
+  .results-panel { background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; border: 2px solid #E5E7EB; }
+  .result-display { font-size: 20px; font-weight: 700; color: #1e293b; font-family: monospace; background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 15px 0; word-break: break-all; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .barcode-type { font-size: 14px; color: #6B7280; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .status-panel { margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-radius: 10px; border: 2px solid #F59E0B; }
+  .progress-panel { margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); border-radius: 10px; border: 2px solid #3B82F6; }
+  .progress-text { font-size: 16px; font-weight: 700; color: #1E40AF; margin-bottom: 10px; }
+  .progress-bar { height: 10px; background: #E2E8F0; border-radius: 5px; overflow: hidden; margin-top: 10px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #10B981 0%, #059669 100%); border-radius: 5px; transition: width 0.5s ease; }
+  .timestamp { font-size: 14px; color: #6B7280; margin-top: 10px; }
+  .complete-panel { background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); padding: 20px; border-radius: 12px; margin-top: 20px; border: 2px solid #10B981; animation: fadeIn 0.5s ease; }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .complete-message { font-size: 18px; font-weight: 700; color: #065F46; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+  /* Manual Entry Button */
+  .manual-entry-section { text-align: center; margin: 15px 0; }
+  .manual-entry-btn { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; border: none; padding: 12px 24px; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .manual-entry-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  /* Modals */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+  .modal.show { display: flex; }
+  .modal-content { background: #fff; width: 450px; max-width: 90%; padding: 20px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.2); animation: modalSlideIn 0.3s ease-out; }
+  @keyframes modalSlideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header h3 { margin: 0 0 15px 0; color: #333; font-size: 18px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary, .btn-secondary { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+  .btn-primary { background: #007bff; color: white; flex: 2; }
+  .btn-secondary { background: #6c757d; color: white; flex: 1; }
+  .modal-footer { margin-top: 15px; font-size: 12px; color: #555; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+
+  /* Misc */
+  .temporary-message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: white; font-weight: 600; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .temporary-message.info { background: #3b82f6; }
+  .manual-stats { background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 15px; margin: 10px 0; display: inline-block; }
+  .stat-item { display: flex; align-items: center; gap: 8px; }
+  .stat-label { font-weight: 600; color: #92400e; }
+  .stat-value { background: white; padding: 2px 10px; border-radius: 20px; font-weight: 700; color: #92400e; }
+  .error-message { background: #FEE2E2; border: 2px solid #EF4444; border-radius: 10px; padding: 20px; margin: 20px 0; color: #991B1B; text-align: center; }
+  .damaged-barcode-help { position: fixed; bottom: 20px; right: 20px; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-width: 300px; border-left: 4px solid #f59e0b; z-index: 150; }
+
+  @media (max-width: 768px) {
+    .scanner-content { padding: 15px; }
+    .scanner-container { padding: 20px 15px; }
+    .scanner-frame { height: 150px; }
+    .modal-actions { flex-direction: column; }
+    .manual-entry-btn { width: 90%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar-container"></div>
+
+<div class="main-content" id="mainContent">
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+    <div class="page-info">
+      <div class="page-title">
+        <span>📷</span>
+        <span> Barcode Scanner</span>
+      </div>
+      <div class="page-subtitle">Scan both Linear & 2D barcodes</div>
+    </div>
+  </header>
+
+  <div class="scanner-content">
+    <div class="scanner-container">
+      <h2>📦 Barcode Scanner</h2>
+      
+      <div class="scanner-info">
+        <div class="info-panel">
+          🚚 Courier: <span id="courierInfo">Loading...</span> | 
+          📦 Parcels to scan: <span id="countInfo">0</span>
+        </div>
+        
+        <div style="color: #6B7280; font-size: 14px;">
+          <span class="format-badge">📏 Linear Barcodes</span>
+          <span class="format-badge">⬜ 2D/QR Codes</span>
+        </div>
+      </div>
+
+      <div class="video-container" id="videoContainer">
+        <video id="video" autoplay playsinline></video>
+        <div class="scanner-overlay">
+          <div class="scanner-frame"></div>
+        </div>
+      </div>
+
+      <div class="manual-entry-section">
+        <button id="manualEntryBtn" class="manual-entry-btn">
+          <span>📝</span> Can't scan? Enter manually
+        </button>
+      </div>
+
+      <div id="errorMessage" style="display: none;"></div>
+
+      <div class="results-panel">
+        <h3 style="margin-bottom: 10px; color: #1e293b;">Last Scanned:</h3>
+        <div class="result-display" id="result">Waiting for scan...</div>
+        <div class="barcode-type" id="barcodeType">
+          <span class="barcode-icon">📏</span>
+          <span>Barcode Type: Not detected</span>
+        </div>
+      </div>
+
+      <div class="status-panel" id="statusPanel">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <span>🔍</span>
+          <span id="status">Initializing scanner...</span>
+        </div>
+        <div class="timestamp" id="timestamp"></div>
+      </div>
+
+      <div class="progress-panel" id="progressPanel">
+        <div class="progress-text" id="progressText">Progress: 0/0 scanned</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="complete-panel" id="completePanel" style="display: none;">
+        <div class="complete-message">
+          <span>✅</span>
+          <span>All Parcels Scanned Successfully!</span>
+        </div>
+        <div class="timestamp" id="countdown">Redirecting to dashboard in 3 seconds...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="manualEntryModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Manual Tracking Number Entry</h3>
+    </div>
+
+    <div class="form-group">
+      <label for="manualTracking">Tracking Number:</label>
+      <input type="text" id="manualTracking" placeholder="Enter tracking number" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label for="trackingDropdown">Select from Pre-loaded List:</label>
+      <select id="trackingDropdown">
+        <option>Loading...</option>
+      </select>
+      <small>Select a number to auto-fill the field above.</small>
+    </div>
+
+    <div class="modal-actions">
+      <button id="submitManualEntry" class="btn-primary">Submit Entry</button>
+      <button id="cancelManualEntry" class="btn-secondary">Cancel</button>
+    </div>
+
+    <div class="modal-footer">
+      ⚠️ Please verify the number is correct before submitting. Manual entries are logged separately.
+    </div>
+  </div>
+</div>
+
+<audio id="beep-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+
+<script>
+// DOM Elements
+const video = document.getElementById("video");
+const resultEl = document.getElementById("result");
+const barcodeTypeEl = document.getElementById("barcodeType");
+const statusEl = document.getElementById("status");
+const timestampEl = document.getElementById("timestamp");
+const progressText = document.getElementById("progressText");
+const progressFill = document.getElementById("progressFill");
+const progressPanel = document.getElementById("progressPanel");
+const completePanel = document.getElementById("completePanel");
+const countdownEl = document.getElementById("countdown");
+const courierInfo = document.getElementById("courierInfo");
+const countInfo = document.getElementById("countInfo");
+const errorMessageDiv = document.getElementById("errorMessage");
+const beep = document.getElementById("beep-sound");
+
+// Manual Entry Elements
+const manualEntryBtn = document.getElementById('manualEntryBtn');
+const manualModal = document.getElementById('manualEntryModal');
+const cancelManualBtn = document.getElementById('cancelManualEntry');
+const submitManualBtn = document.getElementById('submitManualEntry');
+const manualTrackingInput = document.getElementById('manualTracking');
+const trackingDropdown = document.getElementById('trackingDropdown');
+
+// Get courier & count from URL
+const params = new URLSearchParams(window.location.search);
+const totalCount = Number(params.get("count") || 0);
+const courier = params.get("courier") || "Unknown";
+
+courierInfo.textContent = courier;
+countInfo.textContent = totalCount;
+
+let scanned = new Set();
+let currentStream = null;
+let resizeObserver = null;
+let manualEntryCount = 0;
+let noScanTimer = null;
+
+// Load tracking numbers from config file URLs
+function loadTrackingNumbers() {
+  fetch(CONFIG.TRACKING_SCRIPT_URL)
+    .then(res => res.json())
+    .then(data => {
+      trackingDropdown.innerHTML = '<option value="">Select Tracking Number</option>';
+      data.forEach(num => {
+        const option = document.createElement("option");
+        option.value = num;
+        option.textContent = num;
+        trackingDropdown.appendChild(option);
+      });
+    })
+    .catch(err => {
+      console.error("Error loading tracking numbers:", err);
+      trackingDropdown.innerHTML = '<option value="">Error loading tracking numbers</option>';
+    });
+}
+
+trackingDropdown.addEventListener("change", () => {
+  manualTrackingInput.value = trackingDropdown.value;
+});
+
+updateProgress();
+
+function updateProgress() {
+  const scannedCount = scanned.size;
+  const progressPercent = totalCount > 0 ? (scannedCount / totalCount) * 100 : 0;
+  
+  progressText.textContent = `Progress: ${scannedCount}/${totalCount} scanned (${manualEntryCount} manual)`;
+  progressFill.style.width = `${progressPercent}%`;
+  
+  if (scannedCount >= totalCount && totalCount > 0) {
+    showCompletePanel();
+  }
+  
+  updateManualCount();
+}
+
+function showCompletePanel() {
+  progressPanel.style.display = 'none';
+  completePanel.style.display = 'block';
+  
+  let countdown = 3;
+  countdownEl.textContent = `Redirecting to dashboard in ${countdown} seconds...`;
+  
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      countdownEl.textContent = `Redirecting to dashboard in ${countdown} seconds...`;
+    } else {
+      clearInterval(countdownInterval);
+      window.location.href = "index.html";
+    }
+  }, 1000);
+}
+
+function showError(title, message) {
+  errorMessageDiv.innerHTML = `
+    <div class="error-message">
+      <h3>${title}</h3>
+      <p>${message}</p>
+      <button onclick="startCamera()" class="btn-primary" style="margin-top: 10px;">Try Again</button>
+      <button onclick="showManualEntryModal()" class="btn-secondary" style="margin-top: 10px;">Manual Entry</button>
+    </div>
+  `;
+  errorMessageDiv.style.display = 'block';
+}
+
+function hideError() {
+  errorMessageDiv.style.display = 'none';
+}
+
+function setupResizeObserver() {
+  if (resizeObserver) resizeObserver.disconnect();
+  resizeObserver = new ResizeObserver((entries) => {
+    for (let entry of entries) {
+      const scannerFrame = document.querySelector('.scanner-frame');
+      if (scannerFrame) {
+        const containerHeight = entry.target.clientHeight;
+        const newHeight = Math.min(200, containerHeight * 0.6);
+        scannerFrame.style.height = `${newHeight}px`;
+      }
+    }
+  });
+  const videoContainer = document.getElementById('videoContainer');
+  if (videoContainer) resizeObserver.observe(videoContainer);
+}
+
+function formatDateMMDDYYYY(date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${month}/${day}/${date.getFullYear()}`;
+}
+
+async function startCamera() {
+  try {
+    hideError();
+    statusEl.textContent = "Requesting camera access...";
+    if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+    
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    
+    currentStream = stream;
+    video.srcObject = stream;
+    setupResizeObserver();
+    
+    return new Promise((resolve) => {
+      video.onloadedmetadata = () => {
+        statusEl.textContent = "Camera started. Initializing scanner...";
+        startScanner();
+        resolve();
+      };
+      setTimeout(() => { if (video.readyState >= 1) { startScanner(); resolve(); } }, 1000);
+    });
+  } catch (error) {
+    showError("Camera Access Failed", `Error: ${error.message}`);
+    showDamagedBarcodeHelp();
+  }
+}
+
+function startScanner() {
+  try {
+    const reader = new window.ZXing.BrowserMultiFormatReader();
+    statusEl.textContent = "Scanner ready. Point camera at barcode...";
+    
+    if (noScanTimer) clearTimeout(noScanTimer);
+    noScanTimer = setTimeout(() => {
+      if (scanned.size === 0) {
+        showTemporaryMessage('No barcode detected. Try manual entry or check the condition.', 'info');
+        showDamagedBarcodeHelp();
+      }
+    }, 10000);
+    
+    reader.decodeFromVideoDevice(null, video, (result, err) => {
+      if (err || !result) return;
+      if (noScanTimer) clearTimeout(noScanTimer);
+      
+      let code = suggestCorrection(result.getText().trim());
+      if (!code || scanned.has(code)) return;
+      
+      scanned.add(code);
+      const format = result.getBarcodeFormat ? result.getBarcodeFormat() : 'UNKNOWN';
+      const is2D = ['QR_CODE', 'DATA_MATRIX', 'AZTEC', 'PDF_417'].includes(format);
+      
+      resultEl.textContent = code;
+      barcodeTypeEl.innerHTML = `<span class="barcode-icon">${is2D ? '⬜' : '📏'}</span><span>${is2D ? '2D Code' : 'Linear'}</span>`;
+      
+      beep.currentTime = 0; beep.play().catch(() => {});
+      saveTrackingNumber(code, is2D ? '2D Code' : 'Linear Barcode', format.toString());
+      updateProgress();
+    });
+  } catch (error) {
+    showError("Scanner Error", "Failed to initialize barcode scanner.");
+  }
+}
+
+async function saveTrackingNumber(code, barcodeType, barcodeFormat, isManual = false) {
+  try {
+    const scanDate = formatDateMMDDYYYY(new Date());
+    await fetch(CONFIG.SCANNER_SAVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        page: "page2", tracking: code, barcodeType, barcodeFormat, date: scanDate, entryMethod: isManual ? 'manual' : 'scan' 
+      }),
+      mode: "no-cors"
+    });
+    statusEl.textContent = `Saved ✅ (${isManual ? 'Manual' : barcodeType})`;
+    timestampEl.textContent = `Scan Date: ${scanDate}`;
+  } catch (err) {
+    statusEl.textContent = `Error saving ❌`;
+  }
+}
+
+function stopCamera() {
+  if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+  if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+  if (noScanTimer) { clearTimeout(noScanTimer); noScanTimer = null; }
+}
+
+// Manual Entry Flow
+function showManualEntryModal() {
+  if (video && video.srcObject) video.pause();
+  manualModal.classList.add('show');
+  manualTrackingInput.focus();
+  loadTrackingNumbers();
+}
+
+function hideManualEntryModal() {
+  manualModal.classList.remove('show');
+  manualTrackingInput.value = '';
+  if (video && video.srcObject && video.paused) video.play().catch(e => console.error(e));
+}
+
+async function handleManualEntry() {
+  let tracking = manualTrackingInput.value.trim();
+  if (tracking.length < 3 || scanned.has(tracking)) return alert("Invalid or duplicate tracking.");
+  
+  submitManualBtn.classList.add('loading');
+  submitManualBtn.disabled = true;
+  
+  scanned.add(tracking);
+  manualEntryCount++;
+  
+  resultEl.textContent = tracking;
+  barcodeTypeEl.innerHTML = `<span>📝 Manual Entry</span>`;
+  beep.currentTime = 0; beep.play().catch(() => {});
+  
+  await saveTrackingNumber(tracking, "Manual Entry", "Manual", true);
+  updateProgress();
+  
+  submitManualBtn.classList.remove('loading');
+  submitManualBtn.disabled = false;
+  hideManualEntryModal();
+}
+
+function showTemporaryMessage(message, type = 'info') {
+  const messageEl = document.createElement('div');
+  messageEl.className = `temporary-message ${type}`;
+  messageEl.textContent = message;
+  document.body.appendChild(messageEl);
+  setTimeout(() => { messageEl.remove(); }, 3000);
+}
+
+function showDamagedBarcodeHelp() {
+  const helpDiv = document.createElement('div');
+  helpDiv.className = 'damaged-barcode-help';
+  helpDiv.innerHTML = `<h4>📦 Trouble scanning?</h4><ul><li>Adjust distance</li><li>Use manual entry</li></ul><button onclick="this.parentElement.remove()">Dismiss</button>`;
+  document.body.appendChild(helpDiv);
+}
+
+function suggestCorrection(code) {
+  return code.replace(/O/g, '0').replace(/I/g, '1').replace(/Z/g, '2');
+}
+
+function updateManualCount() {
+  let statsDiv = document.getElementById('manualStats');
+  if (!statsDiv) {
+    statsDiv = document.createElement('div');
+    statsDiv.id = 'manualStats';
+    statsDiv.className = 'manual-stats';
+    progressPanel.parentNode.insertBefore(statsDiv, progressPanel.nextSibling);
+  }
+  statsDiv.innerHTML = `<div class="stat-item"><span class="stat-label">Manual Entries:</span><span class="stat-value">${manualEntryCount}</span></div>`;
+}
+
+function initManualEntry() {
+  manualEntryBtn.addEventListener('click', showManualEntryModal);
+  cancelManualBtn.addEventListener('click', hideManualEntryModal);
+  submitManualBtn.addEventListener('click', handleManualEntry);
+}
+
+window.addEventListener('load', () => {
+  initManualEntry();
+  if (!navigator.mediaDevices) return showError("Not Supported", "Camera not supported.");
+  setTimeout(startCamera, 500);
+});
+
+window.addEventListener('beforeunload', stopCamera);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) video.pause(); else if (currentStream && video.paused) video.play();
+});
+</script>
+
+</body>
+</html>
