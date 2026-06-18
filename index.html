@@ -342,7 +342,10 @@
 <body>
 
 <div class="container">
-  <header class="header">
+  <header class="header" style="position: relative";>
+    <button class="logout-btn" onclick="logoutUser()" style="position: absolute; top: 10px; right: 10px;">
+      <span>🚪</span> Logout
+    </button>
     <div class="logo">
       <div class="logo-icon">📦</div>
       <h1 class="logo-text">Parcel Pro</h1>
@@ -431,27 +434,6 @@
       <a href="mailto:support@example.com">Contact</a>
     </div>
   </footer>
-</div>
-<div class="container">
-  
-  <header class="header" style="position: relative;">
-    
-    <button class="logout-btn" onclick="logoutUser()" style="position: absolute; top: 10px; right: 10px;">
-      <span>🚪</span> Logout
-    </button>
-
-    <div class="logo">
-      <div class="logo-icon">📦</div>
-      <h1 class="logo-text">Parcel Pro</h1>
-    </div>
-    <p class="page-title">Manage your parcel deliveries efficiently</p>
-  </header>
-
-  <nav class="nav-menu">
-     </nav>
-
-  <main class="dashboard">
-     </main>
 </div>
 
 <script src="config.js"></script>  
