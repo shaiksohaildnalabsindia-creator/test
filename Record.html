@@ -176,6 +176,23 @@
     <div class="content-container">
         <span>⏱️ Status: <span id="apiStatus">Loading data...</span></span>
         <span class="stats-count" id="totalCount"></span>      
+      <div class="debug-panel" id="debugPanel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong>🔧 Image Cache Stats</strong>
+          <div>
+            <span style="color: #f59e0b;" id="cacheStats">0 images cached</span>
+            <button class="clear-btn" onclick="toggleDebugPanel()" style="margin-left: 10px; padding: 4px 8px; font-size: 11px;">
+              <span>👁️</span> Hide
+            </button>
+          </div>
+        </div>
+        <div class="button-group">
+          <button class="debug-btn" onclick="testImageLoading()"><span>🖼️</span> Test Image Speed</button>
+          <button class="clear-btn" onclick="clearImageCache()"><span>🗑️</span> Clear Cache</button>
+          <button class="inspect-btn" onclick="prefetchAllImages()"><span>📥</span> Prefetch All</button>
+        </div>
+        <pre id="debugLog">Image loading optimized - click a patient name to test</pre>
+      </div>
 
       <div class="filter-info" id="filterInfo">
         Loading data from API...
