@@ -132,6 +132,7 @@
   <div class="content-wrapper">
     <div class="content-container">
         <div class="stats-card">
+          <div>Total <span>${items.length}</span> Images</div>
           <span id="totalCount" style="display: none;</span>
       </div>
 
@@ -328,8 +329,7 @@ function renderGallery(items) {
   let html = `
     <div class="stats">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>Total <span>${items.length}</span>Images</div>
-        <div style="font-size: 13px;">Today</div>
+        <div>Total <span>${items.length}</span> Images</div>
       </div>
     </div>`;
   
