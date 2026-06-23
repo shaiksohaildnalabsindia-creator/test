@@ -5,7 +5,7 @@
 
 function loadSidebar() {
     const sidebarHTML = `
-    <div class="sidebar-header" onclick="window.location.href='#'" tabindex="0" role="button">
+    <div class="sidebar-header" onclick="window.location.href='Dashboard'" tabindex="0" role="button">
       <div class="logo">
         <div class="logo-icon">📦</div>
         <div class="logo-text">Parcel Pro</div>
