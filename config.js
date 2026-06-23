@@ -12,6 +12,6 @@ const CONFIG = {
     GALLERY_API_URL: "https://script.google.com/macros/s/AKfycbxC0SywOr5T6ra5kFbwO9hC8jfb4ImECZbMSXAlTSadie7Yv4IMTNi5T_TCf6X5GY-LFA/exec",
     RECORDS_API_URL: "https://script.google.com/macros/s/AKfycbx4xArW62ztoofyoU578qkNRmBpxbU7tN0eJmlcu_Xh16FlHzZKws6PiyLvbsxCZD0hqw/exec",
     TOTAL_PARCELS_API: "https://script.google.com/macros/s/AKfycbxV2_zUbYNt3j_FPtRtauZ1wZaXFqc2fDik3PWK18Asoki_cGYH2HEdKgPhUNaNGLyJGQ/exec",
-    AUTH_API_URL: "https://script.google.com/macros/s/AKfycbzkjzUD__jO8odF6rkHix9iJyc-mjN9WVsEG1hpi0eQLLgvv8kZq-XLaQri2mFyEKMsBA/exec",
+    AUTH_API_URL: "https://script.google.com/macros/s/AKfycbxlfX9TSmiB1LKZOMg1TM5FX-UWX-39zuHeF4m34Ulke9qpaWnwMrPMeDviTnXyDbMpNQ/exec",
     VERSION: "2.1.0"
 };
