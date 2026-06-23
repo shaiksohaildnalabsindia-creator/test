@@ -1,25 +1,35 @@
 // auth.js
 (function checkAuth() {
-    // 1. Get the token from local storage
     const token = localStorage.getItem('parcel_pro_token');
-    
-    // 2. Get the current page name
+    const loginTime = localStorage.getItem('parcel_pro_login_time');
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-    // 3. If NO token exists, and we are NOT on the login page -> Kick to login
-    if (!token && currentPage !== 'login.html') {
-        window.location.replace('login.html');
+    const EXPIRY_TIME = 48 * 60 * 60 * 1000; 
+
+    let isExpired = false;
+    if (loginTime) {
+        if (Date.now() - parseInt(loginTime) > EXPIRY_TIME) {
+            isExpired = true;
+        }
     }
 
-    // 4. If token DOES exist, and we ARE on the login page -> Push to dashboard
-    if (token && currentPage === 'login.html') {
+    if ((!token || isExpired) && currentPage !== 'login.html') {
+        logoutUser(); 
+        return; 
+    }
+
+    if (token && !isExpired && currentPage === 'login.html') {
         window.location.replace('index.html');
     }
 })();
 
-// Global logout function
 function logoutUser() {
     localStorage.removeItem('parcel_pro_token');
     localStorage.removeItem('parcel_pro_user');
-    window.location.replace('login.html');
+    localStorage.removeItem('parcel_pro_login_time');
+    
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    if (currentPage !== 'login.html') {
+        window.location.replace('login.html');
+    }
 }
