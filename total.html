@@ -13,7 +13,7 @@
   <style>
     /* ---------- PAGE SPECIFIC STYLES ---------- */
     .content-wrapper { flex: 1; padding: 30px; background: #f8fafc; overflow-y: auto; }
-    .content-container { width: 100%; max-width: 1400px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+    .content-container { width: 100%; max-width: 1400px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
 
     .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .header-content { flex: 1; }
@@ -41,10 +41,10 @@
     .refresh-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
 
     /* ---------- TABLE STYLES ---------- */
-    .table-container { padding: 25px 30px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; }
+    .table-container { padding: 0 30px; overflow-x: auto; flex: 1; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; }
     th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s; }
-    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
     td { color: #4b5563; font-size: 14px; }
     tr:hover td { background: #f9fafb; }
     tr:last-child td { border-bottom: none; }
@@ -62,6 +62,18 @@
     .tracking-link { color: #3b82f6; text-decoration: none; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid transparent; font-size: 13px; }
     .tracking-link:hover { background: #dbeafe; border-color: #3b82f6; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); }
     .tracking-link::after { content: '👁️'; opacity: 0.7; font-size: 12px; }
+
+    /* ---------- PAGINATION STYLES ---------- */
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #f9fafb; border-top: 1px solid #e5e7eb; flex-wrap: wrap; gap: 15px; }
+    .pagination-info { color: #6b7280; font-size: 14px; }
+    .pagination-controls { display: flex; gap: 6px; align-items: center; }
+    .page-btn { padding: 8px 12px; border: 1px solid #d1d5db; background: #ffffff; border-radius: 6px; cursor: pointer; color: #374151; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { background: #f3f4f6; border-color: #9ca3af; }
+    .page-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .rows-per-page { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 14px; }
+    .rows-per-page select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; outline: none; background: #fff; cursor: pointer;}
+    .rows-per-page select:focus { border-color: #3b82f6; }
 
     /* Loading & Empty states */
     .empty-state { padding: 60px 20px; text-align: center; color: #9ca3af; }
@@ -108,8 +120,10 @@
       .controls { flex-direction: column; gap: 15px; }
       .search-box input, .filter-box select { width: 100%; }
       .refresh-btn { width: 100%; justify-content: center; }
-      .table-container { padding: 15px; }
+      .table-container { padding: 0 15px; }
       th, td { padding: 12px 15px; font-size: 13px; }
+      .pagination-container { flex-direction: column; gap: 15px; align-items: center; padding: 15px; }
+      .pagination-controls { flex-wrap: wrap; justify-content: center; }
       .nav-arrow { width: 50px; height: 50px; font-size: 24px; }
       .close-btn { width: 40px; height: 40px; font-size: 20px; }
     }
@@ -136,16 +150,20 @@
       </div>
       <div class="page-subtitle">View and search all parcels in the system</div>
     </div>
-    <div class="user-menu">
-    </div>
   </header>
 
   <div class="content-wrapper">
     <div class="content-container">       
+      <div class="header">
+        <div class="header-content">
+          <h2>📊 All Parcels</h2>
+          <p>View all parcels with search, filter, and image viewing capabilities</p>
+        </div>
         <div class="stats-card">
-          <span id="count">0</span>
+          <span class="stats-count" id="count">0</span>
           <span class="stats-label">Total Parcels</span>
         </div>
+      </div>
 
       <div class="controls-container">
         <div class="controls">
@@ -197,6 +215,22 @@
           </tbody>
         </table>
       </div>
+
+      <div class="pagination-container" id="paginationContainer" style="display: none;">
+        <div class="rows-per-page">
+          <label for="rowsPerPage">Rows per page:</label>
+          <select id="rowsPerPage" onchange="changeRowsPerPage()">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="pagination-info" id="paginationInfo">Showing 0 to 0 of 0 entries</div>
+        <div class="pagination-controls" id="paginationControls">
+          </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -219,7 +253,6 @@
   </div>
   <img id="fsImage" src="" alt="Fullscreen view">
 </div>
-
 
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
@@ -254,6 +287,11 @@ let currentIndex = 0;
 let isLoading = false;
 let memoryCache = null;
 let isFromCache = false;
+
+/* ---------- PAGINATION VARIABLES ---------- */
+let currentPage = 1;
+let rowsPerPage = 10;
+let currentDisplayData = []; // Store the fully filtered/sorted data here
 
 /* ---------- TOAST FUNCTION ---------- */
 function showToast(message, type = 'success') {
@@ -363,6 +401,7 @@ function loadData(forceRefresh = false) {
       </td>
     </tr>`;
   countElement.textContent = "0";
+  document.getElementById("paginationContainer").style.display = 'none';
   
   const oldScript = document.getElementById("jsonpScript");
   if (oldScript) oldScript.remove();
@@ -432,9 +471,31 @@ function filterTable() {
   });
   
   countElement.textContent = filteredData.length;
-  tableBody.innerHTML = '';
   
   if (filteredData.length === 0) {
+    currentDisplayData = [];
+    renderTablePage();
+    return;
+  }
+  
+  filteredData = filteredData.sort((a, b) => {
+    const indexA = reversedData.findIndex(item => item.trackingNumber === a.trackingNumber && item.bookingDate === a.bookingDate);
+    const indexB = reversedData.findIndex(item => item.trackingNumber === b.trackingNumber && item.bookingDate === b.bookingDate);
+    return indexA - indexB;
+  });
+  
+  // Set data to be paginated, reset to page 1, and render
+  currentDisplayData = filteredData;
+  currentPage = 1;
+  renderTablePage();
+}
+
+function renderTablePage() {
+  tableBody.innerHTML = '';
+  const totalRows = currentDisplayData.length;
+
+  if (totalRows === 0) {
+    document.getElementById("paginationContainer").style.display = 'none';
     tableBody.innerHTML = `
       <tr>
         <td colspan="7">
@@ -447,18 +508,19 @@ function filterTable() {
       </tr>`;
     return;
   }
-  
-  filteredData = filteredData.sort((a, b) => {
-    const indexA = reversedData.findIndex(item => item.trackingNumber === a.trackingNumber && item.bookingDate === a.bookingDate);
-    const indexB = reversedData.findIndex(item => item.trackingNumber === b.trackingNumber && item.bookingDate === b.bookingDate);
-    return indexA - indexB;
-  });
-  
-  const filteredCount = filteredData.length;
-  filteredData.forEach((row, index) => {
+
+  document.getElementById("paginationContainer").style.display = 'flex';
+
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+  const paginatedData = currentDisplayData.slice(startIndex, endIndex);
+
+  paginatedData.forEach((row, idx) => {
     const tr = document.createElement("tr");
+    const sno = totalRows - (startIndex + idx); // Maintains correct global numbering
+    
     tr.innerHTML = `
-      <td class="sno">${filteredCount - index}</td>
+      <td class="sno">${sno}</td>
       <td>${row.trackingNumber || ''}</td>
       <td>${formatDate(row.bookingDate)}</td>
       <td>${row.fromAddress || ''}</td>
@@ -468,6 +530,83 @@ function filterTable() {
     `;
     tableBody.appendChild(tr);
   });
+
+  updatePaginationUI(startIndex, endIndex, totalRows);
+}
+
+function updatePaginationUI(startIndex, endIndex, totalRows) {
+  document.getElementById('paginationInfo').textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalRows} entries`;
+  
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const controls = document.getElementById('paginationControls');
+  controls.innerHTML = '';
+
+  // Prev Button
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.textContent = 'Prev';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => goToPage(currentPage - 1);
+  controls.appendChild(prevBtn);
+
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, startPage + 4);
+  
+  if (endPage - startPage < 4) {
+    startPage = Math.max(1, endPage - 4);
+  }
+
+  if (startPage > 1) {
+    controls.appendChild(createPageBtn(1));
+    if (startPage > 2) {
+      const dots = document.createElement('span');
+      dots.textContent = '...';
+      dots.style.padding = '0 4px';
+      controls.appendChild(dots);
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    controls.appendChild(createPageBtn(i));
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const dots = document.createElement('span');
+      dots.textContent = '...';
+      dots.style.padding = '0 4px';
+      controls.appendChild(dots);
+    }
+    controls.appendChild(createPageBtn(totalPages));
+  }
+
+  // Next Button
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.onclick = () => goToPage(currentPage + 1);
+  controls.appendChild(nextBtn);
+}
+
+function createPageBtn(pageNum) {
+  const btn = document.createElement('button');
+  btn.className = `page-btn ${pageNum === currentPage ? 'active' : ''}`;
+  btn.textContent = pageNum;
+  btn.onclick = () => goToPage(pageNum);
+  return btn;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderTablePage();
+  document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function changeRowsPerPage() {
+  rowsPerPage = parseInt(document.getElementById('rowsPerPage').value, 10);
+  currentPage = 1;
+  renderTablePage();
 }
 
 /* ---------- IMAGE CACHING & MODAL ---------- */
