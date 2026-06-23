@@ -88,8 +88,6 @@
         loginBtn.innerHTML = '<span class="loading-spinner"></span><span>Verifying...</span>';
 
         try {
-            // Note: Since this is Google Apps Script, you generally send a POST request
-            // If you are using simple no-cors, you'll need to use JSONP or handle responses accordingly.
             const response = await fetch(CONFIG.AUTH_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -99,9 +97,12 @@
             const data = await response.json();
 
             if (data.success) {
-                // Save the token/session and redirect to dashboard
+                // Save the token, username, AND the exact login timestamp
                 localStorage.setItem('parcel_pro_token', data.token || 'authenticated');
                 localStorage.setItem('parcel_pro_user', username);
+                localStorage.setItem('parcel_pro_login_time', Date.now().toString()); // NEW!
+                
+                // Redirect to dashboard
                 window.location.href = 'index.html';
             } else {
                 throw new Error(data.message || "Invalid credentials");
@@ -114,6 +115,5 @@
         }
     });
 </script>
-
 </body>
 </html>
