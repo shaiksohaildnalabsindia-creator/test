@@ -16,7 +16,7 @@
   <style>
     /* ---------- PAGE SPECIFIC STYLES ---------- */
     .content-wrapper { flex: 1; padding: 30px; background: #f8fafc; overflow-y: auto; }
-    .content-container { width: 100%; max-width: 1400px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+    .content-container { width: 100%; max-width: 1400px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column;}
 
     .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .header-content { flex: 1; }
@@ -53,10 +53,10 @@
     .search-stats span { display: inline-flex; align-items: center; gap: 5px; }
 
     /* ---------- TABLE STYLES ---------- */
-    .table-container { padding: 25px 30px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; }
+    .table-container { padding: 0 30px; overflow-x: auto; flex: 1; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; }
     th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s; }
-    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
     td { color: #4b5563; font-size: 14px; }
     tr:hover td { background: #f9fafb; }
     tr:last-child td { border-bottom: none; }
@@ -64,6 +64,18 @@
 
     .tracking-link { color: #3b82f6; text-decoration: none; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid transparent; font-size: 13px; }
     .tracking-link:hover { background: #dbeafe; border-color: #3b82f6; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); }
+
+    /* ---------- PAGINATION STYLES ---------- */
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #f9fafb; border-top: 1px solid #e5e7eb; flex-wrap: wrap; gap: 15px; }
+    .pagination-info { color: #6b7280; font-size: 14px; }
+    .pagination-controls { display: flex; gap: 6px; align-items: center; }
+    .page-btn { padding: 8px 12px; border: 1px solid #d1d5db; background: #ffffff; border-radius: 6px; cursor: pointer; color: #374151; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { background: #f3f4f6; border-color: #9ca3af; }
+    .page-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .rows-per-page { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 14px; }
+    .rows-per-page select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; outline: none; background: #fff; cursor: pointer;}
+    .rows-per-page select:focus { border-color: #3b82f6; }
 
     /* ---------- SKELETON LOADER ---------- */
     .skeleton-loader { padding: 20px; }
@@ -86,8 +98,6 @@
     .debug-panel { background: #1e293b; color: #e2e8f0; padding: 20px 30px; margin: 20px 30px; border-radius: 12px; font-family: monospace; font-size: 13px; border-left: 4px solid #f59e0b; transition: all 0.3s ease; }
     .debug-panel.hidden { display: none; }
     .debug-panel pre { white-space: pre-wrap; word-wrap: break-word; margin-top: 10px; background: #0f172a; padding: 15px; border-radius: 8px; max-height: 200px; overflow: auto; color: #4ade80; }
-    .button-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-    .button-group button { padding: 8px 16px; font-size: 12px; }
 
     /* ---------- IMAGE MODAL & GALLERY ---------- */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; padding: 20px; }
@@ -136,11 +146,12 @@
       .search-box-container { min-width: 100%; }
       .search-buttons { width: 100%; }
       .search-btn, .clear-btn, .debug-btn, .inspect-btn { flex: 1; justify-content: center; }
-      .table-container { padding: 15px; }
+      .table-container { padding: 0 15px; }
       th, td { padding: 12px 15px; font-size: 13px; }
+      .pagination-container { flex-direction: column; gap: 15px; align-items: center; padding: 15px; }
+      .pagination-controls { flex-wrap: wrap; justify-content: center; }
       .nav-arrow { width: 50px; height: 50px; font-size: 24px; }
       .close-btn { width: 40px; height: 40px; font-size: 20px; }
-      .button-group { flex-direction: column; }
       .gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
     }
 
@@ -196,8 +207,6 @@
         <pre id="debugLog">Image loading optimized - click a patient name to test</pre>
       </div>
 
-
-
       <div class="search-container">
         <div class="search-box-wrapper">
           <div class="search-box-container">
@@ -226,17 +235,33 @@
           </thead>
           <tbody id="tableBody">
             <tr>
-              <td colspan="11">
+              <td colspan="6">
                 <div class="skeleton-loader">
-                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
-                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
-                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
+                  <div class="skeleton-row"><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div><div class="skeleton-cell"></div></div>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <div class="pagination-container" id="paginationContainer" style="display: none;">
+        <div class="rows-per-page">
+          <label for="rowsPerPage">Rows per page:</label>
+          <select id="rowsPerPage" onchange="changeRowsPerPage()">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="pagination-info" id="paginationInfo">Showing 0 to 0 of 0 entries</div>
+        <div class="pagination-controls" id="paginationControls">
+          </div>
+      </div>
+      
     </div>
   </div>
 </div>
@@ -282,11 +307,16 @@ const refreshBtn = document.getElementById("refreshBtn");
 const refreshIcon = document.getElementById("refreshIcon");
 const refreshText = document.getElementById("refreshText");
 
+/* ===== PAGINATION VARIABLES ===== */
+let currentPage = 1;
+let rowsPerPage = 10;
+let currentDisplayData = []; // Data ready for pagination display
+
 /* ===== ZOOM AND PAN VARIABLES ===== */
 let scale = 1, translateX = 0, translateY = 0, isDragging = false, startX = 0, startY = 0;
 
 /* ===== GLOBAL VARIABLES ===== */
-let allData = [], filteredData = [], currentDisplayData = [];
+let allData = [], filteredData = [];
 let isSearching = false, currentSearchTerm = "", currentImages = [], currentIndex = 0;
 let searchTimeout = null, isLoading = false;
 
@@ -297,11 +327,11 @@ let imageMetadata = null, imageLoadStartTime = 0;
 /* ===== SAMPLE DATA (FALLBACK) ===== */
 const SAMPLE_DATA = [
   { "Sample Entry Date": "2024-01-15", "Collection Date": "2024-01-16", "Test name": "Complete Blood Count", "Patient name": "John Smith", "Patient child name": "", "sample type": "Blood", "Consent Received / Not": "Yes", "Location": "New York", "Invoice NO": "INV-001", "Tracking no": "TRK001" },
-  { "Sample Entry Date": "2024-01-15", "Collection Date": "2024-01-16", "Test name": "Lipid Profile", "Patient name": "Sarah Johnson", "Patient child name": "", "sample type": "Blood", "Consent Received / Not": "Yes", "Location": "Los Angeles", "Invoice NO": "INV-002", "Tracking no": "TRK002" }
+  { "Sample Entry Date": "2024-01-15", "Collection Date": "2024-01-16", "Test name": "Lipid Profile", "Patient name": "Sarah Johnson", "Patient child name": "", "sample type": "Blood", "Consent Received / Not": "Yes", "Location": "Los Angeles", "Invoice NO": "INV-002", "Tracking no": "TRK002" },
+  { "Sample Entry Date": "2024-01-18", "Collection Date": "2024-01-19", "Test name": "Glucose Fasting", "Patient name": "Alice Brown", "Location": "Chicago", "Tracking no": "TRK003" }
 ];
 const SAMPLE_IMAGES = [
-  { url: "https://via.placeholder.com/300x200?text=Sample+1", caption: "Sample Image 1" },
-  { url: "https://via.placeholder.com/300x200?text=Sample+2", caption: "Sample Image 2" }
+  { url: "https://via.placeholder.com/300x200?text=Sample+1", caption: "Sample Image 1" }
 ];
 
 /* ===== UI TOGGLES ===== */
@@ -343,25 +373,18 @@ function clearDebug() { debugLog.innerHTML = 'Log cleared.\n'; }
 function preloadImage(url, caption) {
   return new Promise((resolve, reject) => {
     if (imageCache.has(url)) {
-      log(`🖼️ Cache hit: ${caption || url.substring(0, 30)}`, 'success');
       resolve(imageCache.get(url));
       return;
     }
-    log(`📥 Loading: ${caption || url.substring(0, 30)}`, 'info');
-    
     const img = new Image();
     const startTime = performance.now();
     
     img.onload = () => {
       imageCache.set(url, img);
-      log(`✅ Loaded in ${((performance.now() - startTime) / 1000).toFixed(2)}s: ${caption || url.substring(0, 30)}`, 'success');
       updateCacheStats();
       resolve(img);
     };
-    img.onerror = () => {
-      log(`❌ Failed: ${caption || url.substring(0, 30)}`, 'error');
-      reject(new Error('Failed to load image'));
-    };
+    img.onerror = () => { reject(new Error('Failed to load image')); };
     img.src = url;
   });
 }
@@ -373,28 +396,14 @@ function updateCacheStats() {
 
 function clearImageCache() { imageCache.clear(); updateCacheStats(); log('🗑️ Image cache cleared', 'info'); }
 
-async function testImageLoading() {
-  log('Testing image loading speed...', 'info');
-  imageLoadStartTime = performance.now();
-  try {
-    await preloadImage('https://via.placeholder.com/100x100?text=Test', 'Test Image');
-    log(`⚡ Test complete in ${((performance.now() - imageLoadStartTime) / 1000).toFixed(2)}s`, 'success');
-  } catch (error) { log(`❌ Test failed: ${error.message}`, 'error'); }
-}
-
 async function fetchImageMetadata() {
-  if (imageMetadata) { log('Using cached image metadata', 'info'); return imageMetadata; }
-  log('Fetching image metadata...', 'info');
+  if (imageMetadata) return imageMetadata;
   try {
     const response = await fetch(CONFIG.IMAGE_API + `?t=${Date.now()}`);
     const data = await response.json();
     imageMetadata = Array.isArray(data) ? data : (data.data || data.images || []);
-    log(`✅ Loaded metadata for ${imageMetadata.length} images`, 'success');
     return imageMetadata;
-  } catch (error) {
-    log(`❌ Failed to load image metadata: ${error.message}`, 'error');
-    return SAMPLE_IMAGES;
-  }
+  } catch (error) { return SAMPLE_IMAGES; }
 }
 
 function getImagesForPatient(patientName, allImages) {
@@ -404,10 +413,8 @@ function getImagesForPatient(patientName, allImages) {
 }
 
 async function openModal(patientName) {
-  log(`Opening images for: ${patientName}`, 'info');
   imageModal.classList.add("show");
   gallery.innerHTML = '<div class="modal-loading">Loading images...</div>';
-  const startTime = performance.now();
   
   try {
     const allImages = await fetchImageMetadata();
@@ -451,24 +458,19 @@ async function openModal(patientName) {
         container.appendChild(errorDiv);
       });
     });
-    
-    log(`✅ Gallery ready in ${((performance.now() - startTime) / 1000).toFixed(2)}s (${matchingImages.length} images)`, 'success');
   } catch (error) {
-    log(`❌ Gallery error: ${error.message}`, 'error');
     gallery.innerHTML = `<div class="error-message">Error loading images: ${error.message}</div>`;
   }
 }
 
 async function prefetchAllImages() {
   log('🔄 Prefetching all images...', 'info');
-  const startTime = performance.now();
   try {
     const allImages = await fetchImageMetadata();
-    let loaded = 0;
     const imagesToLoad = allImages.slice(0, 10);
-    for (const img of imagesToLoad) { await preloadImage(img.url, img.caption); loaded++; }
-    log(`✅ Prefetched ${loaded} images in ${((performance.now() - startTime) / 1000).toFixed(2)}s`, 'success');
-  } catch (error) { log(`❌ Prefetch failed: ${error.message}`, 'error'); }
+    for (const img of imagesToLoad) { await preloadImage(img.url, img.caption); }
+    log(`✅ Prefetched images successfully`, 'success');
+  } catch (error) { log(`❌ Prefetch failed`, 'error'); }
 }
 
 function closeModal() { imageModal.classList.remove("show"); }
@@ -510,8 +512,6 @@ async function tryLoadFromApi() {
   refreshBtn.disabled = true;
   refreshIcon.style.animation = 'spin 1s linear infinite';
   refreshText.textContent = 'Loading...';
-  
-  log('Loading patient data...', 'info');
   apiStatus.textContent = 'Loading...';
   
   try {
@@ -519,7 +519,6 @@ async function tryLoadFromApi() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const data = await response.json();
-    log('✅ Patient data received', 'success');
     
     if (Array.isArray(data)) allData = data;
     else if (data.data && Array.isArray(data.data)) allData = data.data;
@@ -529,9 +528,9 @@ async function tryLoadFromApi() {
     filteredData = allData.filter(row => hasMinTwoColumnsFilled(row));
     totalCount.textContent = filteredData.length;
     filterInfo.innerHTML = `<strong>✅ Data Loaded:</strong> ${filteredData.length} records displayed`;
+    apiStatus.textContent = `✅ ${filteredData.length} records`;
     
     updateTableDisplay(filteredData);
-    apiStatus.textContent = `✅ ${filteredData.length} records`;
     
     setTimeout(() => { fetchImageMetadata().then(() => log('📸 Image metadata cached', 'success')); }, 1000);
     
@@ -541,8 +540,8 @@ async function tryLoadFromApi() {
     filteredData = allData.filter(row => hasMinTwoColumnsFilled(row));
     totalCount.textContent = filteredData.length;
     filterInfo.innerHTML = `<strong>⚠️ Using Sample Data</strong>`;
-    updateTableDisplay(filteredData);
     apiStatus.textContent = '⚠️ Sample data';
+    updateTableDisplay(filteredData);
   }
   
   isLoading = false;
@@ -562,7 +561,7 @@ function hasMinTwoColumnsFilled(row) {
 function matchesSearch(row, term) {
   if (!term) return true;
   const lowerTerm = term.toLowerCase().trim();
-  const columns = ["Sample Entry Date", "Collection Date", "Test name", "Patient name", "Patient child name", "sample type", "Consent Received / Not", "Location", "Invoice NO", "Tracking no"];
+  const columns = ["Sample Entry Date", "Test name", "Patient name", "Location", "Tracking no"];
   return columns.some(col => row[col] && row[col].toString().toLowerCase().includes(lowerTerm));
 }
 
@@ -592,16 +591,31 @@ function debounceSearch() {
   searchTimeout = setTimeout(performSearch, 300);
 }
 
-/* ===== TABLE DISPLAY ===== */
+/* ===== PAGINATION AND TABLE DISPLAY ===== */
 function updateTableDisplay(data, searchTerm = "") {
+  // Store reversed data for pagination display
+  currentDisplayData = [...data].reverse();
+  currentPage = 1; // Reset to page 1 on new data or search
+  renderTablePage(searchTerm);
+}
+
+function renderTablePage(searchTerm = "") {
   tableBody.innerHTML = '';
-  if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="no-results"><div class="no-results-icon">🔍</div>No records found</td></tr>`;
+  const totalRows = currentDisplayData.length;
+
+  if (totalRows === 0) {
+    document.getElementById("paginationContainer").style.display = 'none';
+    tableBody.innerHTML = `<tr><td colspan="6" class="no-results"><div class="no-results-icon">🔍</div>No records found</td></tr>`;
     return;
   }
-  
-  const reversed = [...data].reverse();
-  reversed.forEach((row, idx) => {
+
+  document.getElementById("paginationContainer").style.display = 'flex';
+
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+  const paginatedData = currentDisplayData.slice(startIndex, endIndex);
+
+  paginatedData.forEach((row, idx) => {
     const tr = document.createElement("tr");
     const highlight = (text) => {
       if (!searchTerm || !text) return text || '';
@@ -613,8 +627,11 @@ function updateTableDisplay(data, searchTerm = "") {
       return str;
     };
     
+    // Maintain accurate global SNO indexing based on the entire list
+    const sno = totalRows - (startIndex + idx); 
+    
     tr.innerHTML = `
-      <td class="sno-cell">${reversed.length - idx}</td>
+      <td class="sno-cell">${sno}</td>
       <td>${highlight(row["Sample Entry Date"])}</td>
       <td>${highlight(row["Test name"])}</td>
       <td>${row["Patient name"] ? `<span class="tracking-link" onclick="openModal('${row["Patient name"].replace(/'/g, "\\'")}')">${highlight(row["Patient name"])}</span>` : ''}</td>
@@ -623,6 +640,85 @@ function updateTableDisplay(data, searchTerm = "") {
     `;
     tableBody.appendChild(tr);
   });
+
+  updatePaginationUI(startIndex, endIndex, totalRows);
+}
+
+function updatePaginationUI(startIndex, endIndex, totalRows) {
+  document.getElementById('paginationInfo').textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalRows} entries`;
+  
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const controls = document.getElementById('paginationControls');
+  controls.innerHTML = '';
+
+  // Prev Button
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.textContent = 'Prev';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => goToPage(currentPage - 1);
+  controls.appendChild(prevBtn);
+
+  // Dynamic Page Numbers Logic (Limit max buttons shown)
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, startPage + 4);
+  
+  if (endPage - startPage < 4) {
+    startPage = Math.max(1, endPage - 4);
+  }
+
+  if (startPage > 1) {
+    controls.appendChild(createPageBtn(1));
+    if (startPage > 2) {
+      const dots = document.createElement('span');
+      dots.textContent = '...';
+      dots.style.padding = '0 4px';
+      controls.appendChild(dots);
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    controls.appendChild(createPageBtn(i));
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const dots = document.createElement('span');
+      dots.textContent = '...';
+      dots.style.padding = '0 4px';
+      controls.appendChild(dots);
+    }
+    controls.appendChild(createPageBtn(totalPages));
+  }
+
+  // Next Button
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.onclick = () => goToPage(currentPage + 1);
+  controls.appendChild(nextBtn);
+}
+
+function createPageBtn(pageNum) {
+  const btn = document.createElement('button');
+  btn.className = `page-btn ${pageNum === currentPage ? 'active' : ''}`;
+  btn.textContent = pageNum;
+  btn.onclick = () => goToPage(pageNum);
+  return btn;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderTablePage(currentSearchTerm);
+  // Auto-scroll to top of table on page change
+  document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function changeRowsPerPage() {
+  rowsPerPage = parseInt(document.getElementById('rowsPerPage').value, 10);
+  currentPage = 1;
+  renderTablePage(currentSearchTerm);
 }
 
 /* ===== INITIALIZATION ===== */
@@ -634,5 +730,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
-
