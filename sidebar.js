@@ -5,7 +5,7 @@
 
 function loadSidebar() {
     const sidebarHTML = `
-    <div class="sidebar-header" onclick="window.location.href='index.html'" tabindex="0" role="button">
+    <div class="sidebar-header" onclick="window.location.href='Test'" tabindex="0" role="button">
       <div class="logo">
         <div class="logo-icon">📦</div>
         <div class="logo-text">Parcel Pro</div>
@@ -17,13 +17,13 @@ function loadSidebar() {
       <div class="menu-section">
         <div class="menu-section-title">Operations</div>
         <div class="menu-items">
-          <a href="parcel_entry.html" class="menu-item" data-page="parcel_entry.html">
+          <a href="parcel_entry.html" class="menu-item" data-page="parcel_entry">
             <span class="menu-item-icon">📦</span><span class="menu-item-text">Parcel Entry</span>
           </a>
-          <a href="parcel_entry_form.html" class="menu-item" data-page="parcel_entry_form.html">
+          <a href="parcel_entry_form.html" class="menu-item" data-page="parcel_entry_form">
             <span class="menu-item-icon">🔍</span><span class="menu-item-text">Parcel Scanner</span>
           </a>
-          <a href="upload_sample_images.html" class="menu-item" data-page="upload_sample_images.html">
+          <a href="upload_sample_images.html" class="menu-item" data-page="upload_sample_images">
             <span class="menu-item-icon">📷</span><span class="menu-item-text">Upload Images</span>
           </a>
         </div>
@@ -32,16 +32,16 @@ function loadSidebar() {
       <div class="menu-section">
         <div class="menu-section-title">Reports</div>
         <div class="menu-items">
-          <a href="delivered_today.html" class="menu-item" data-page="delivered_today.html">
+          <a href="delivered_today.html" class="menu-item" data-page="delivered_today">
             <span class="menu-item-icon">📅</span><span class="menu-item-text">Delivered Today</span>
           </a>
-          <a href="total.html" class="menu-item" data-page="total.html">
+          <a href="total.html" class="menu-item" data-page="total">
             <span class="menu-item-icon">📊</span><span class="menu-item-text">Total Samples</span>
           </a>
-          <a href="gallery.html" class="menu-item" data-page="gallery.html">
+          <a href="gallery.html" class="menu-item" data-page="gallery">
             <span class="menu-item-icon">🖼️</span><span class="menu-item-text">Sample Gallery</span>
           </a>
-          <a href="Record.html" class="menu-item" data-page="Record.html">
+          <a href="Record.html" class="menu-item" data-page="Record">
             <span class="menu-item-icon">📋</span><span class="menu-item-text">Patients Records</span>
           </a>
         </div>
