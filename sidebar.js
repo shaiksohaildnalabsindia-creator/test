@@ -1,8 +1,3 @@
-// ==========================================================================
-// MASTER SIDEBAR.JS - PARCEL PRO
-// Handles Mobile menus, PC collapsing, and active page highlighting
-// ==========================================================================
-
 function loadSidebar() {
     const sidebarHTML = `
     <div class="sidebar-header" onclick="window.location.href='Dashboard'" tabindex="0" role="button">
@@ -55,10 +50,8 @@ function loadSidebar() {
     </button>
     `;
 
-    // Inject into the page
     const container = document.getElementById('sidebar-container');
     if(container) {
-        // Create the aside element dynamically
         const aside = document.createElement('aside');
         aside.className = 'sidebar';
         aside.id = 'sidebar';
@@ -66,17 +59,14 @@ function loadSidebar() {
         container.replaceWith(aside);
     }
 
-    // Highlight the active page automatically based on the URL
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'Dashboard.html';
     const activeLink = document.querySelector(`.menu-item[data-page="${currentPage}"]`);
     if (activeLink) {
         activeLink.classList.add('active');
     }
 }
 
-// ---------- RESPONSIVE TOGGLES ---------- //
 
-// 1. For PC: Collapse the sidebar to show icons only
 function toggleCollapse() {
   const sidebar = document.getElementById('sidebar');
   const mainContent = document.getElementById('mainContent');
@@ -87,19 +77,15 @@ function toggleCollapse() {
   localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
 }
 
-// 2. For Mobile: Slide the sidebar in and out
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   if(sidebar) sidebar.classList.toggle('open');
 }
 
-// ---------- INITIALIZATION ---------- //
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inject the HTML
     loadSidebar();
     
-    // 2. Apply saved PC collapse state
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     if (sidebar && mainContent && window.innerWidth > 768) {
@@ -109,17 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 3. Mobile safety: Close sidebar if user clicks outside of it
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-            // If the click was NOT on the sidebar and NOT on the menu button
             if (!sidebar.contains(e.target) && !e.target.closest('.menu-btn')) {
                 sidebar.classList.remove('open');
             }
         }
     });
 
-    // 4. Handle resizing window from Mobile to PC
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768 && sidebar) {
             sidebar.classList.remove('open'); // Reset mobile state
