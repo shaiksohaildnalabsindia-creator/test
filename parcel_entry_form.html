@@ -121,10 +121,10 @@ parcelForm.addEventListener("submit", async function(e){
   submitBtn.innerHTML = '<span class="loading-spinner"></span><span>Processing...</span>';
 
   try {
-    // Send data to the backend using the config file variable
+    // Send data to the backend
+    // FIX: Removed "Content-Type: application/json" to prevent CORS crash
     await fetch(CONFIG.SCANNER_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         page: "page1", 
         courier, 
@@ -136,17 +136,21 @@ parcelForm.addEventListener("submit", async function(e){
     // Show success message
     showToast(`Starting scanning for ${count} ${courier} parcels`, 'success');
     
-    // Wait a moment for user to see the message
+    // Redirect to the barcode scanner page
     setTimeout(() => {
-      // Redirect to the barcode scanner page
       window.location.href = `scanner_camera.html?courier=${encodeURIComponent(courier)}&count=${count}`;
     }, 1000);
     
   } catch (error) {
     console.error('Error:', error);
-    showToast("Error submitting form. Please try again.", 'error');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '<span>🚚</span><span>Start Scanning</span>';
+    
+    // FIX: Even if the Google API fails or throws a network error, 
+    // we MUST redirect the user so they aren't stuck on this page!
+    showToast("Proceeding to scanner...", 'info');
+    
+    setTimeout(() => {
+      window.location.href = `scanner_camera.html?courier=${encodeURIComponent(courier)}&count=${count}`;
+    }, 1500);
   }
 });
 
@@ -164,6 +168,5 @@ window.addEventListener('load', () => {
   courierSelect.focus();
 });
 </script>
-
 </body>
 </html>
